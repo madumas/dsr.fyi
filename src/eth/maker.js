@@ -1,5 +1,15 @@
 import Maker from '@makerdao/dai';
+import McdPlugin from '@makerdao/dai-plugin-mcd'
 
 export default async function createMaker(network = 'mainnet') {
-  return await Maker.create('browser', {});
+  return Maker.create('http',
+      {
+          url: 'https://mainnet.infura.io/v3/e37b6b6fede24263907500a81762f2ca',
+          plugins: [
+              [McdPlugin, {}] // the second argument can be used to pass options to the plugin
+          ],
+          accounts: {
+
+          }
+      });
 }
