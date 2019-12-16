@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import createMaker from './eth/maker';
 
@@ -45,7 +44,7 @@ class App extends Component {
       return balance.toNumber();
 
     }
-    return 'Connecting...';
+    return '?';
   }
 
   render() {
