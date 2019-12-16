@@ -1,6 +1,21 @@
 import React, { Component } from 'react';
+import { withStyles } from '@material-ui/core/styles'
+import Grid from '@material-ui/core/Grid'
+import Paper from '@material-ui/core/Paper'
 import './App.css';
 import createMaker from './eth/maker';
+
+
+const styles = theme => ({
+  root: {
+    flexGrow: 1,
+  },
+  paper: {
+    padding: theme.spacing.unit * 2,
+    textAlign: 'left',
+    color: theme.palette.text.secondary,
+  }
+})
 
 class App extends Component {
   constructor(props) {
@@ -32,47 +47,56 @@ class App extends Component {
     }
   }
 
-  address() {
-    return this.state.address;
+  proxyAddress() {
+    const { address } = this.state;
+
+    if (address) {
+
+      return "Proxy Address: " + address;
+
+    }
+    return '';
   }
 
   dsr() {
     const { balance } = this.state;
 
-    if (balance) {
-
-      return balance.toNumber();
-
+    if (balance && balance.toNumber ) {
+      return "DSR Balance: " + balance.toNumber() + " DAI";
     }
-    return '?';
+    return '';
   }
 
   render() {
+    const { classes } = this.props;
     return (
       <div className="App">
-        <header className="App-header">
-          <form onSubmit={this.handleSubmit}>
-            <label>
-              Ethereum Address:
-            <input type="text" value={this.state.value} onChange={this.handleChange} style={{width: 400}} />
-            </label>
-            <input type="submit" value="Submit" />
-          </form>
-          <br/>
-          <p>
-            {`Current address: ${this.state.address}`}
-          </p>
-          <p>
-            {`Proxy address: ${this.state.proxy}`}
-          </p>
-          <p>
-            {`DSR Balance: ${this.dsr()} DAI`}
-          </p>
-
-        </header>
+        <Grid container justify="center" spacing={16}>
+          <Grid item >
+            <Paper className={classes.paper}>
+              <p>
+                View the DSR balance of an Ethereum Address in DAI.
+              </p>
+              <form onSubmit={this.handleSubmit}>
+                <label>
+                  Ethereum Address:
+                <input type="text" value={this.state.value} onChange={this.handleChange} style={{width: 400}} />
+                </label>
+                <input type="submit" value="Submit" />
+              </form>
+              <br/>
+              <p>
+                {this.proxyAddress()}
+              </p>
+              <p>
+                {this.dsr()}
+              </p>
+            </Paper>
+          </Grid>
+        </Grid>
       </div>
     );
   }
 }
 
-export default App;
+export default withStyles(styles)(App);
