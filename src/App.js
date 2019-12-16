@@ -48,11 +48,11 @@ class App extends Component {
   }
 
   proxyAddress() {
-    const { address } = this.state;
+    const { proxy } = this.state;
 
-    if (address) {
+    if (proxy) {
 
-      return "Proxy Address: " + address;
+      return "Proxy Address: " + proxy;
 
     }
     return '';
