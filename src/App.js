@@ -35,18 +35,18 @@ class App extends Component {
 
     this.setState({ maker: maker});
     this.interval = setInterval(() => this.setState({ time: Date.now() }), 1000);
+    this.intervalChainData = setInterval(() => this.pullChainData(), 60000);
   }
   componentWillUnmount() {
     clearInterval(this.interval);
+    clearInterval(this.intervalChainData);
   }
-
 
   handleChange = (event) => {
     this.setState({value: event.target.value});
   };
 
-  handleSubmit = async (event) => {
-    event.preventDefault();
+  async pullChainData() {
     try {
       const proxyAddress = await this.state.maker.service('proxy').getProxyAddress(this.state.value);
       const balance = await this.state.maker.service('mcd:savings').balanceOf(proxyAddress||this.state.value);
@@ -57,6 +57,11 @@ class App extends Component {
       console.log(e);
       this.setState({address: undefined, proxy: undefined, balance: '? DAI', rho:0, dsr:1});
     }
+  }
+
+  handleSubmit = async (event) => {
+    event.preventDefault();
+    await this.pullChainData();
   };
 
   proxyAddress() {
