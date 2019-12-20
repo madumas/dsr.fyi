@@ -4,7 +4,8 @@ import Grid from '@material-ui/core/Grid'
 import Paper from '@material-ui/core/Paper'
 import './App.css';
 import createMaker from './eth/maker';
-
+import { RAY } from '@makerdao/dai/dist/src/utils/constants';
+import BigNumber from 'bignumber.js';
 
 const styles = theme => ({
   root: {
@@ -29,7 +30,12 @@ class App extends Component {
     //const manager = maker.service('mcd:cdpManager')
 
     this.setState({ maker: maker});
+    this.interval = setInterval(() => this.setState({ time: Date.now() }), 1000);
   }
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
+
 
   handleChange = (event) => {
     this.setState({value: event.target.value});
@@ -40,9 +46,12 @@ class App extends Component {
     try {
       const proxyAddress = await this.state.maker.service('proxy').getProxyAddress(this.state.value);
       const balance = await this.state.maker.service('mcd:savings').balanceOf(proxyAddress||this.state.value);
-      this.setState({address: this.state.value, proxy: proxyAddress, balance: balance});
+      const rho = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').rho());
+      const dsr = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').dsr()).div(RAY);
+      this.setState({address: this.state.value, proxy: proxyAddress, balance: balance, rho: rho, dsr: dsr});
     } catch (e) {
-      this.setState({address: undefined, proxy: undefined, balance: '? DAI'});
+      console.log(e);
+      this.setState({address: undefined, proxy: undefined, balance: '? DAI', rho:0, dsr:1});
     }
   };
 
@@ -50,9 +59,7 @@ class App extends Component {
     const { proxy } = this.state;
 
     if (proxy) {
-
       return "Proxy Address: " + proxy;
-
     }
     return '';
   }
@@ -61,9 +68,10 @@ class App extends Component {
     const { balance } = this.state;
 
     if (balance && balance.toNumber) {
-      return "DSR Balance: " + balance.toNumber().toLocaleString("en-EN", {
-        maximumFractionDigits: 5,
-        minimumFractionDigits: 5
+      const adjustedBalance = Number(Math.pow(this.state.dsr.toNumber(),(new Date()/1000)-this.state.rho)*balance.toNumber());
+      return "DSR Balance: " + adjustedBalance.toLocaleString("en-EN", {
+        maximumFractionDigits: 7,
+        minimumFractionDigits: 7
       })+ " DAI";
     }
     return '';
