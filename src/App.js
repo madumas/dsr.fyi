@@ -15,6 +15,10 @@ const styles = theme => ({
     padding: theme.spacing.unit * 2,
     textAlign: 'left',
     color: theme.palette.text.secondary,
+  },
+  balance: {
+    verticalAlign: 'middle',
+    textAlign: 'center'
   }
 });
 
@@ -69,7 +73,7 @@ class App extends Component {
 
     if (balance && balance.toNumber) {
       const adjustedBalance = Number(Math.pow(this.state.dsr.toNumber(),(new Date()/1000)-this.state.rho)*balance.toNumber());
-      return "DSR Balance: " + adjustedBalance.toLocaleString("en-EN", {
+      return adjustedBalance.toLocaleString("en-EN", {
         maximumFractionDigits: 7,
         minimumFractionDigits: 7
       })+ " DAI";
@@ -85,7 +89,7 @@ class App extends Component {
           <Grid item >
             <Paper className={classes.paper}>
               <p>
-                View the DSR balance of an Ethereum Address in DAI.
+                View the live Dai Savings Rates (DSR) balance of an Ethereum Address.
               </p>
               <form onSubmit={this.handleSubmit}>
                 <label>
@@ -98,9 +102,9 @@ class App extends Component {
               <p>
                 {this.proxyAddress()}
               </p>
-              <p>
+              <h1 className={classes.balance}>
                 {this.dsr()}
-              </p>
+              </h1>
             </Paper>
           </Grid>
         </Grid>
