@@ -15,7 +15,7 @@ const styles = theme => ({
     textAlign: 'left',
     color: theme.palette.text.secondary,
   }
-})
+});
 
 class App extends Component {
   constructor(props) {
@@ -23,7 +23,7 @@ class App extends Component {
     this.state = {};
   }
 
-  async componentWillMount() {
+  async componentDidMount() {
     const maker = await createMaker();
     await maker.authenticate();
     //const manager = maker.service('mcd:cdpManager')
@@ -33,19 +33,18 @@ class App extends Component {
 
   handleChange = (event) => {
     this.setState({value: event.target.value});
-
-  }
+  };
 
   handleSubmit = async (event) => {
     event.preventDefault();
     try {
       const proxyAddress = await this.state.maker.service('proxy').getProxyAddress(this.state.value);
-      const balance = await this.state.maker.service('mcd:savings').balanceOf(proxyAddress);
+      const balance = await this.state.maker.service('mcd:savings').balanceOf(proxyAddress||this.state.value);
       this.setState({address: this.state.value, proxy: proxyAddress, balance: balance});
     } catch (e) {
       this.setState({address: undefined, proxy: undefined, balance: '? DAI'});
     }
-  }
+  };
 
   proxyAddress() {
     const { proxy } = this.state;
@@ -61,15 +60,18 @@ class App extends Component {
   dsr() {
     const { balance } = this.state;
 
-    if (balance && balance.toNumber ) {
-      return "DSR Balance: " + balance.toNumber() + " DAI";
+    if (balance && balance.toNumber) {
+      return "DSR Balance: " + balance.toNumber().toLocaleString("en-EN", {
+        maximumFractionDigits: 5,
+        minimumFractionDigits: 5
+      })+ " DAI";
     }
     return '';
   }
 
   render() {
     const { classes } = this.props;
-    return (
+        return (
       <div className="App">
         <Grid container justify="center" spacing={16}>
           <Grid item >
