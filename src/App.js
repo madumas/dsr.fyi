@@ -19,6 +19,9 @@ const styles = theme => ({
   balance: {
     verticalAlign: 'middle',
     textAlign: 'center'
+  },
+  proxy: {
+    fontSize: 'x-small'
   }
 });
 
@@ -99,14 +102,14 @@ class App extends Component {
               <form onSubmit={this.handleSubmit}>
                 <label>
                   Ethereum Address:
-                <input type="text" value={this.state.value} onChange={this.handleChange} style={{width: 400}} />
+                <input type="text" value={this.state.value} onChange={this.handleChange} style={{width: 280}} />
                 </label>
                 <input type="submit" value="Submit" />
               </form>
               <br/>
-              <p>
+              <div className={classes.proxy}>
                 {this.proxyAddress()}
-              </p>
+              </div>
               <h1 className={classes.balance}>
                 {this.dsr()}
               </h1>
