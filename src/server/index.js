@@ -29,7 +29,7 @@ app.get('/robots.txt', function (req, res) {
   res.send("User-agent: *\nDisallow: /api/");
 });
 
-app.use(express.static("build"));
+app.use(express.static("publicbuild"));
 app.use(express.static("public_all"));
 
 async function renderOtherPage(req,res) {
@@ -76,11 +76,12 @@ async function renderOtherPage(req,res) {
   </html>
     `);
 }
-
 app.get('*', (req,res) => {
+  console.log(req)
   renderOtherPage(req,res)
 });
 app.get('/', (req,res) => {
+  console.log(req)
   renderOtherPage(req,res)
 });
 
