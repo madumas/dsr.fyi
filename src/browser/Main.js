@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles'
-import Grid from '@material-ui/core/Grid'
-import Paper from '@material-ui/core/Paper'
+import {Grid, Paper, Typography, TextField, Box} from '@material-ui/core'
 import './App.css';
-import createMaker from './eth/maker';
+import createMaker from '../eth/maker';
 import { RAY } from '@makerdao/dai/dist/src/utils/constants';
 import BigNumber from 'bignumber.js';
+import { Helmet } from 'react-helmet-async'
 
 const styles = theme => ({
   root: {
@@ -100,25 +100,30 @@ class Main extends Component {
     const { classes } = this.props;
         return (
       <div className="Main">
-        <Grid container justify="center" spacing={16}>
+        <Helmet>
+          <title>dsr.fyi: View your live DSR Balance</title>
+          <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+        </Helmet>
+        <Grid container justify="center" spacing={10}>
           <Grid item >
             <Paper className={classes.paper}>
-              <p>
+              <Typography>
                 View the live Dai Savings Rates (DSR) balance of an Ethereum Address.
-              </p>
+              </Typography>
+              <br/>
               <form onSubmit={this.handleSubmit}>
-                <label>
-                  Ethereum Address:
-                <input type="text" value={this.state.value} onChange={this.handleChange} style={{width: 280}} />
-                </label>
-                <input type="submit" value="Submit" />
+                <TextField id="outlined-basic" label="Ethereum Address" variant="outlined" fullWidth value={this.state.value} onChange={this.handleChange}  />
               </form>
               <br/>
               <div className={classes.proxy}>
                 {this.proxyAddress()}
               </div>
               <h1 className={classes.balance}>
+                <Typography>
+                <Box fontFamily={"monospace"} fontSize={24} fontWeight="fontWeightBold">
                 {this.dsr()}
+                </Box>
+                </Typography>
               </h1>
             </Paper>
           </Grid>
