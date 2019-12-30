@@ -33,14 +33,16 @@ app.use(express.static("publicbuild"));
 app.use(express.static("public_all"));
 
 async function renderOtherPage(req,res) {
+  const addr = req.params.addr ? '0x'+String(req.params.addr).toLowerCase() : undefined;
   const sheets = new ServerStyleSheets();
   const helmetContext = {};
+  const pageData = {addr:addr};
   const reactDom = ReactDOMServer.renderToString(
       sheets.collect(
         <HelmetProvider context={helmetContext}>
           <ThemeProvider theme={theme}>
             <StaticRouter location={req.url} context={{}}>
-              <App data={{}}/>
+              <App data={pageData}/>
             </StaticRouter>
           </ThemeProvider>
         </HelmetProvider>
@@ -48,7 +50,7 @@ async function renderOtherPage(req,res) {
   );
   // Grab the CSS from our sheetsRegistry.
   const css = sheets.toString();
-  const html = renderFullPage( reactDom, css, {} );
+  const html = renderFullPage( reactDom );
   const { helmet } = helmetContext;
 
   res.send(`
@@ -67,7 +69,7 @@ async function renderOtherPage(req,res) {
             <script>
           // WARNING: See the following for security issues around embedding JSON in HTML:
           // http://redux.js.org/recipes/ServerRendering.html#security-considerations
-          window.__PRELOADED_STATE__ = ${JSON.stringify({}).replace(
+          window.__PRELOADED_STATE__ = ${JSON.stringify({pageData}).replace(
       /</g,
       '\\\\\u003c'
   )}
@@ -76,6 +78,10 @@ async function renderOtherPage(req,res) {
   </html>
     `);
 }
+app.get('/0x:addr([A-Z][a-z]*[A-Z][a-z]*[A-Z][a-z]*)', (req,res) => {
+  console.log(req.params.addr)
+  renderOtherPage(req,res)
+})
 app.get('*', (req,res) => {
   console.log(req)
   renderOtherPage(req,res)

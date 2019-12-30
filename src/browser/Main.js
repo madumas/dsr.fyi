@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles'
-import {Grid, Paper, Typography, TextField, Box} from '@material-ui/core'
+import {Grid, Paper, Typography, TextField, Box, CircularProgress} from '@material-ui/core'
 import './App.css';
 import createMaker from '../eth/maker';
 import { RAY } from '@makerdao/dai/dist/src/utils/constants';
@@ -22,6 +22,10 @@ const styles = theme => ({
   },
   proxy: {
     fontSize: 'x-small'
+  },
+  progress: {
+    verticalAlign: 'middle',
+    textAlign: 'center'
   }
 });
 
@@ -29,6 +33,10 @@ class Main extends Component {
   constructor(props) {
     super(props);
     this.state = {};
+    if(props.pageData !== undefined) {
+      console.log(props.pageData)
+      this.state={value: props.pageData.addr};
+    }
   }
 
   async componentDidMount() {
@@ -36,15 +44,16 @@ class Main extends Component {
     await maker.authenticate();
     //const manager = maker.service('mcd:cdpManager')
 
-    this.setState({ maker: maker});
+    this.setState({ maker: maker, loading:false});
     this.interval = setInterval(() => this.setState({ time: Date.now() }), 1000);
-    this.intervalChainData = setInterval(() => this.pullChainData(), 60000);
+    this.intervalChainData = setInterval(() => this.pullChainData(false), 60000);
 
-    const { add } = this.props.match.params;
-    if(add) {
-      this.setState({value: add});
+    const { addr } = this.props.match.params;
+    if(addr) {
+      this.setState({value: addr});
       await this.pullChainData();
     }
+
   }
   componentWillUnmount() {
     clearInterval(this.interval);
@@ -55,38 +64,48 @@ class Main extends Component {
     this.setState({value: event.target.value});
   };
 
-  async pullChainData() {
+  async pullChainData(loadingIndicator=true) {
     try {
       const address = String(this.state.value).toLowerCase();
+      loadingIndicator && this.setState({loading:true});
       const proxyAddress = await this.state.maker.service('proxy').getProxyAddress(address);
       const balance = await this.state.maker.service('mcd:savings').balanceOf(proxyAddress||address);
       const rho = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').rho());
       const dsr = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').dsr()).div(RAY);
-      this.setState({address: this.state.value, proxy: proxyAddress, balance: balance, rho: rho, dsr: dsr});
+      this.setState({address: this.state.value, proxy: proxyAddress, balance: balance, rho: rho, dsr: dsr, loading:false});
     } catch (e) {
       console.log(e);
-      this.setState({address: undefined, proxy: undefined, balance: '? DAI', rho:0, dsr:1});
+      this.setState({address: undefined, proxy: undefined, balance: '? DAI', rho:0, dsr:1,loading:false});
     }
   }
 
   handleSubmit = async (event) => {
     event.preventDefault();
+    this.setState()
     await this.pullChainData();
   };
 
-  proxyAddress() {
-    const { proxy } = this.state;
+  address() {
+    const { address } = this.state;
+    if (address) {
+      return "Address: " + address;
+    }
+    return '';
+  }
 
-    if (proxy) {
+  proxyAddress() {
+    const { proxy, loading } = this.state;
+
+    if (proxy && loading===false) {
       return "Proxy Address: " + proxy;
     }
     return '';
   }
 
   dsr() {
-    const { balance } = this.state;
+    const { balance, loading } = this.state;
 
-    if (balance && balance.toNumber) {
+    if (balance && balance.toNumber && loading===false) {
       const adjustedBalance = Number(Math.pow(this.state.dsr.toNumber(),(new Date()/1000)-this.state.rho)*balance.toNumber());
       return adjustedBalance.toLocaleString("en-EN", {
         maximumFractionDigits: 7,
@@ -96,12 +115,22 @@ class Main extends Component {
     return '';
   }
 
+  loading() {
+    const {loading} = this.state;
+    if (loading) {
+      return (<CircularProgress />)
+    }
+  }
+
   render() {
     const { classes } = this.props;
+    console.log(this.state)
+    let canonicalURL = "https://0xna.me/0x"+this.state.value;
         return (
       <div className="Main">
         <Helmet>
           <title>dsr.fyi: View your live DSR Balance</title>
+          <link rel="canonical" href= {canonicalURL}/>
           <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
         </Helmet>
         <Grid container justify="center" spacing={10}>
@@ -112,11 +141,23 @@ class Main extends Component {
               </Typography>
               <br/>
               <form onSubmit={this.handleSubmit}>
-                <TextField id="outlined-basic" label="Ethereum Address" variant="outlined" fullWidth value={this.state.value} onChange={this.handleChange}  />
+                <TextField
+                           label="Ethereum Address"
+                           variant="outlined"
+                           fullWidth
+                           value={this.state.value}
+                           onChange={this.handleChange}
+                           InputLabelProps={{
+                             shrink: true,
+                           }}
+                />
               </form>
               <br/>
               <div className={classes.proxy}>
                 {this.proxyAddress()}
+              </div>
+              <div className={classes.progress}>
+                {this.loading()}
               </div>
               <h1 className={classes.balance}>
                 <Typography>

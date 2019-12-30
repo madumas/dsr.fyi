@@ -12,8 +12,8 @@ class App extends Component {
         return(
             <div>
                 <Switch>
-                    <Route path="/:add" component={Main}/>
-                    <Route path="/" component={Main}/>
+                    <Route path="/:addr" render={(props) => <Main {...props} pageData={this.data} location={this.props.location}/>}/>
+                    <Route path="/" render={(props) => <Main {...props} pageData={this.data} location={this.props.location}/>}/>
                 </Switch>
             </div>
         );
