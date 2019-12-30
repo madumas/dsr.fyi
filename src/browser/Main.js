@@ -84,7 +84,7 @@ class Main extends Component {
       }
     } catch (e) {
       console.log(e);
-      this.setState({address: undefined, proxy: undefined, balance: '? DAI', rho:0, dsr:1,loading:false});
+      this.setState({proxy: undefined, balance: '? DAI', rho:0, dsr:1,loading:false});
     }
   }
 
