@@ -79,15 +79,12 @@ async function renderOtherPage(req,res) {
     `);
 }
 app.get('/0x:addr([A-Z][a-z]*[A-Z][a-z]*[A-Z][a-z]*)', (req,res) => {
-  console.log(req.params.addr)
   renderOtherPage(req,res)
 })
 app.get('*', (req,res) => {
-  console.log(req)
   renderOtherPage(req,res)
 });
 app.get('/', (req,res) => {
-  console.log(req)
   renderOtherPage(req,res)
 });
 

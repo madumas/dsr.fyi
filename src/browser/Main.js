@@ -137,12 +137,13 @@ class Main extends Component {
 
   render() {
     const { classes } = this.props;
-    let canonicalURL = "https://0xna.me/"+this.state.address;
+    const canonicalURL = "https://0xna.me/"+this.state.address;
+    const canonicalLink = this.state.address?<link rel="canonical" href= {canonicalURL}/>:'';
         return (
       <div className="Main">
         <Helmet>
           <title>dsr.fyi: View your live DSR Balance</title>
-          <link rel="canonical" href= {canonicalURL}/>
+          {canonicalLink}
           <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
         </Helmet>
         <Grid container justify="center" spacing={10}>
