@@ -134,7 +134,7 @@ class Main extends Component {
   render() {
     const { classes } = this.props;
     console.log(this.state)
-    let canonicalURL = "https://0xna.me/"+this.state.value;
+    let canonicalURL = "https://0xna.me/"+this.state.address;
         return (
       <div className="Main">
         <Helmet>
