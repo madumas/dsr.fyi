@@ -33,7 +33,7 @@ class Main extends Component {
   constructor(props) {
     super(props);
     this.state = {};
-    if(props.pageData !== undefined) {
+    if(props.pageData && props.pageData.addr) {
       const address = String(props.pageData.addr).toLowerCase();
       this.state={value: props.pageData.addr, address: address};
     }
@@ -66,13 +66,22 @@ class Main extends Component {
 
   async pullChainData(loadingIndicator=true) {
     try {
-      const address = String(this.state.value).toLowerCase();
-      loadingIndicator && this.setState({loading:true});
-      const proxyAddress = await this.state.maker.service('proxy').getProxyAddress(address);
-      const balance = await this.state.maker.service('mcd:savings').balanceOf(proxyAddress||address);
-      const rho = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').rho());
-      const dsr = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').dsr()).div(RAY);
-      this.setState({address: this.state.value, proxy: proxyAddress, balance: balance, rho: rho, dsr: dsr, loading:false});
+      if(this.state.value) {
+        const address = String(this.state.value).toLowerCase();
+        loadingIndicator && this.setState({loading: true});
+        const proxyAddress = await this.state.maker.service('proxy').getProxyAddress(address);
+        const balance = await this.state.maker.service('mcd:savings').balanceOf(proxyAddress || address);
+        const rho = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').rho());
+        const dsr = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').dsr()).div(RAY);
+        this.setState({
+            address: this.state.value,
+            proxy: proxyAddress,
+            balance: balance,
+            rho: rho,
+            dsr: dsr,
+            loading: false
+        });
+      }
     } catch (e) {
       console.log(e);
       this.setState({address: undefined, proxy: undefined, balance: '? DAI', rho:0, dsr:1,loading:false});
