@@ -33,28 +33,32 @@ class Main extends Component {
   constructor(props) {
     super(props);
     this.state = {};
-    if(props.pageData && props.pageData.addr) {
+    if(props.pageData!==undefined && props.pageData.addr!=undefined) {
       const address = String(props.pageData.addr).toLowerCase();
       this.state={value: props.pageData.addr, address: address};
     }
+    console.log('Initial state:' +JSON.stringify(this.state))
   }
 
   async componentDidMount() {
-    const maker = await createMaker();
-    await maker.authenticate();
-    //const manager = maker.service('mcd:cdpManager')
+    try {
+      const maker = await createMaker();
+      await maker.authenticate();
+      this.setState({ maker: maker, loading:false});
+    } catch (e) {
+      console.log('Exception while creating Maker: ' +e)
+    }
 
-    this.setState({ maker: maker, loading:false});
     this.interval = setInterval(() => this.setState({ time: Date.now() }), 1000);
     this.intervalChainData = setInterval(() => this.pullChainData(false), 60000);
 
     const { addr } = this.props.match.params;
     if(addr) {
       this.setState({value: addr});
-      await this.pullChainData();
+      await this.pullChainData(false);
     }
-
   }
+
   componentWillUnmount() {
     clearInterval(this.interval);
     clearInterval(this.intervalChainData);
@@ -83,7 +87,7 @@ class Main extends Component {
         });
       }
     } catch (e) {
-      console.log(e);
+      console.log('Exception while pullChainData: '+e);
       this.setState({proxy: undefined, balance: '? DAI', rho:0, dsr:1,loading:false});
     }
   }
@@ -133,7 +137,6 @@ class Main extends Component {
 
   render() {
     const { classes } = this.props;
-    console.log(this.state)
     let canonicalURL = "https://0xna.me/"+this.state.address;
         return (
       <div className="Main">
