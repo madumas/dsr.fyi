@@ -34,8 +34,8 @@ class Main extends Component {
     super(props);
     this.state = {};
     if(props.pageData !== undefined) {
-      console.log(props.pageData)
-      this.state={value: props.pageData.addr};
+      const address = String(props.pageData.addr).toLowerCase();
+      this.state={value: props.pageData.addr, address: address};
     }
   }
 
@@ -86,9 +86,9 @@ class Main extends Component {
   };
 
   address() {
-    const { address } = this.state;
-    if (address) {
-      return "Address: " + address;
+    const { address, loading } = this.state;
+    if (address && loading!==true) {
+      return "Owner Address: " + address;
     }
     return '';
   }
@@ -125,7 +125,7 @@ class Main extends Component {
   render() {
     const { classes } = this.props;
     console.log(this.state)
-    let canonicalURL = "https://0xna.me/0x"+this.state.value;
+    let canonicalURL = "https://0xna.me/"+this.state.value;
         return (
       <div className="Main">
         <Helmet>
@@ -153,6 +153,9 @@ class Main extends Component {
                 />
               </form>
               <br/>
+              <div className={classes.proxy}>
+                {this.address()}
+              </div>
               <div className={classes.proxy}>
                 {this.proxyAddress()}
               </div>
