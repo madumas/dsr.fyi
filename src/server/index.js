@@ -4,6 +4,11 @@ import { StaticRouter } from 'react-router-dom'
 import App from '../browser/App.js'
 import '../index.css'
 import theme from '../theme';
+import accounts from './accounts'
+const Web3 = require("web3");
+
+import saiProdAddresses from '@makerdao/dai/dist/contracts/addresses/mainnet'
+import prodAddresses from '@makerdao/dai-plugin-mcd/contracts/addresses/mainnet';
 
 import {
   ServerStyleSheets,
@@ -15,6 +20,43 @@ import { HelmetProvider } from 'react-helmet-async'
 
 require('dotenv').config();
 const app = express();
+
+let wsprovider = "wss://mainnet.infura.io/ws/v3/f9c5c0daaf2243b497c55c1ed8372d63";//;//'ws://ethereum:8546';
+let mcdConfig={};
+mcdConfig.addresses = prodAddresses;
+mcdConfig.saiAddresses = saiProdAddresses;
+
+let ws,web3,accountCache
+async function connect() {
+  console.log("connect");
+  ws = new Web3.providers.WebsocketProvider(wsprovider, {
+    clientConfig:
+      {
+        maxReceivedFrameSize: 100000000,
+        maxReceivedMessageSize: 100000000,
+      }
+  });
+  ws.on('end', e => {
+    console.log('Socket is closed. Reconnect will be attempted in 10 seconds.', e.reason);
+    setTimeout(function () {
+      connect();
+    }, 10000);
+  });
+
+  ws.on('error', err => {
+    console.error('Socket encountered error: ', err.message, 'Closing socket  and reconnect');
+  });
+
+  ws.on('connect', function () {
+    console.log('WS Connected');
+    web3 = new Web3(ws);
+    accountCache = new accounts(web3, mcdConfig);
+    accountCache.prefetch().then();
+  });
+}
+
+connect().then(function(){});
+
 
 app.set('port', (process.env.WEBPORT || 3001));
 
@@ -36,7 +78,7 @@ async function renderOtherPage(req,res) {
   const addr = req.params.addr ? '0x'+String(req.params.addr).toLowerCase() : undefined;
   const sheets = new ServerStyleSheets();
   const helmetContext = {};
-  const pageData = {addr:addr};
+  const pageData = {addr:addr,top:await accountCache.top(20)};
   const reactDom = ReactDOMServer.renderToString(
       sheets.collect(
         <HelmetProvider context={helmetContext}>
