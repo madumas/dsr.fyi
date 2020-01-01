@@ -74,6 +74,14 @@ app.get('/robots.txt', function (req, res) {
 app.use(express.static("publicbuild"));
 app.use(express.static("public_all"));
 
+app.get('/api/v1/addresses/top', (req, res) => {
+  res.append('Access-Control-Allow-Origin', ['*']);
+  accountCache.top(20).then((data) => {
+    //console.log(data)
+    res.json(data)
+  })
+});
+
 async function renderOtherPage(req,res) {
   const addr = req.params.addr ? '0x'+String(req.params.addr).toLowerCase() : undefined;
   const sheets = new ServerStyleSheets();

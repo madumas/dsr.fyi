@@ -2,10 +2,12 @@ import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles'
 import {Grid, Paper, Typography, TextField, Box, CircularProgress} from '@material-ui/core'
 import './App.css';
+import TopAccounts from "./topAccounts";
 import createMaker from '../eth/maker';
 import { RAY } from '@makerdao/dai/dist/src/utils/constants';
 import BigNumber from 'bignumber.js';
 import { Helmet } from 'react-helmet-async'
+import 'isomorphic-fetch'
 
 const styles = theme => ({
   root: {
@@ -33,24 +35,32 @@ class Main extends Component {
   constructor(props) {
     super(props);
     this.state = {};
-    if(props.pageData!==undefined && props.pageData.addr!=undefined) {
+    let req = props.match.req;
+    this.baseURL= 'http://localhost:3001'; //req ? `${req.protocol}://${req.get('Host')}` : '';
+    if(props.pageData!==undefined) {
       const address = String(props.pageData.addr).toLowerCase();
-      this.state={value: props.pageData.addr, address: address};
+      this.state={value: props.pageData.addr, address: address, top:props.pageData.top};
     }
-    console.log('Initial state:' +JSON.stringify(this.state))
+  }
+
+  async fetchData() {
+    const data = (await fetch(this.baseURL + '/api/v1/addresses/top')).json();
+    return data;
   }
 
   async componentDidMount() {
     try {
       const maker = await createMaker();
       await maker.authenticate();
-      this.setState({ maker: maker, loading:false});
+      const top = this.state.top || await this.fetchData();
+      this.setState({ maker: maker, loading:false, top})
+      await this.pullMakerState();
     } catch (e) {
       console.log('Exception while creating Maker: ' +e)
     }
 
     this.interval = setInterval(() => this.setState({ time: Date.now() }), 1000);
-    this.intervalChainData = setInterval(() => this.pullChainData(false), 60000);
+    this.intervalChainData = setInterval(() => this.refreshNumbers(), 60000);
 
     const { addr } = this.props.match.params;
     if(addr) {
@@ -68,21 +78,29 @@ class Main extends Component {
     this.setState({value: event.target.value});
   };
 
+  async pullMakerState() {
+    const rho = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').rho());
+    const dsr = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').dsr()).div(RAY);
+    this.setState({rho,dsr});
+  }
+
+  async refreshNumbers() {
+    this.setState({top:await this.fetchData()});
+    await this.pullChainData(false)
+  }
+
   async pullChainData(loadingIndicator=true) {
     try {
       if(this.state.value) {
         const address = String(this.state.value).toLowerCase();
         loadingIndicator && this.setState({loading: true});
+        await this.pullMakerState();
         const proxyAddress = await this.state.maker.service('proxy').getProxyAddress(address);
         const balance = await this.state.maker.service('mcd:savings').balanceOf(proxyAddress || address);
-        const rho = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').rho());
-        const dsr = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').dsr()).div(RAY);
         this.setState({
             address: this.state.value,
             proxy: proxyAddress,
             balance: balance,
-            rho: rho,
-            dsr: dsr,
             loading: false
         });
       }
@@ -182,6 +200,11 @@ class Main extends Component {
                 </Box>
                 </Typography>
               </h1>
+            </Paper>
+          </Grid>
+          <Grid item >
+            <Paper className={classes.paper}>
+              <TopAccounts top={this.state.top} rho={this.state.rho} dsr={this.state.dsr} maker={this.state.maker} time={this.state.time} />
             </Paper>
           </Grid>
         </Grid>

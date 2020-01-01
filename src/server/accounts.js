@@ -51,12 +51,16 @@ export default class accounts {
     let list=Object.values(_this.addresses).sort((a,b)=>b.balance-a.balance);
     let response=[];
     for(let i=0;i<count;i++) {
-      const proxyContract = new _this.web3.eth.Contract(proxyAbi, list[i].address);
-      let owner;
-      try {
-        owner = await proxyContract.methods.owner().call();
-      } catch(e) {
-        //no proxy
+      let owner=list[i].owner;
+      if (typeof list[i].owner === 'undefined') {
+        owner=-1;
+        const proxyContract = new _this.web3.eth.Contract(proxyAbi, list[i].address);
+        try {
+          owner = await proxyContract.methods.owner().call();
+        } catch (e) {
+          //no proxy
+        }
+        list[i].owner = owner;
       }
       response.push({addr:list[i].address, proxyOwner:owner, balance:list[i].balance*(this._chi(new Date()/1000))});
     }
