@@ -82,6 +82,13 @@ app.get('/api/v1/addresses/top', (req, res) => {
   })
 });
 
+app.get('/sitemap.txt', (req, res) => {
+  res.type('text/plain');
+  const list = accountCache.list()
+  res.send(list.reduce((txt,row)=>txt+'\nhttps://dsr.fyi/'+row.address,''));
+});
+
+
 async function renderOtherPage(req,res) {
   const addr = req.params.addr ? '0x'+String(req.params.addr).toLowerCase() : undefined;
   const sheets = new ServerStyleSheets();

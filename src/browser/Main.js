@@ -38,7 +38,7 @@ class Main extends Component {
     let req = props.match.req;
     this.baseURL= 'http://localhost:3001'; //req ? `${req.protocol}://${req.get('Host')}` : '';
     if(props.pageData!==undefined) {
-      const address = String(props.pageData.addr).toLowerCase();
+      const address = props.pageData.addr?String(props.pageData.addr).toLowerCase():undefined;
       this.state={value: props.pageData.addr, address: address, top:props.pageData.top};
     }
   }

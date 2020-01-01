@@ -47,6 +47,10 @@ export default class accounts {
 
   }
 
+  list() {
+    return Object.values(_this.addresses);
+  }
+
   async top(count=100) {
     let list=Object.values(_this.addresses).sort((a,b)=>b.balance-a.balance);
     let response=[];
