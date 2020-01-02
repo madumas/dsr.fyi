@@ -11,7 +11,7 @@ import {Box} from "@material-ui/core";
 
 const styles = theme => ({
   table: {
-    minWidth: 650,
+    //minWidth: 650,
   },
 });
 
