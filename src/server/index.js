@@ -68,7 +68,7 @@ app.use(morgan('combined'));
 
 app.get('/robots.txt', function (req, res) {
   res.type('text/plain');
-  res.send("User-agent: *\nDisallow: /api/");
+  res.send("User-agent: *\nDisallow: /api/\nSitemap: http://dsr.fyi/sitemap.txt");
 });
 
 app.use(express.static("publicbuild"));
