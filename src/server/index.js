@@ -77,7 +77,6 @@ app.use(express.static("public_all"));
 app.get('/api/v1/addresses/top', (req, res) => {
   res.append('Access-Control-Allow-Origin', ['*']);
   accountCache.top(20).then((data) => {
-    //console.log(data)
     res.json(data)
   })
 });
@@ -88,12 +87,19 @@ app.get('/sitemap.txt', (req, res) => {
   res.send(list.reduce((txt,row)=>txt+'\nhttps://dsr.fyi/'+row.address,''));
 });
 
-
 async function renderOtherPage(req,res) {
   const addr = req.params.addr ? '0x'+String(req.params.addr).toLowerCase() : undefined;
   const sheets = new ServerStyleSheets();
   const helmetContext = {};
-  const pageData = {addr:addr,top:await accountCache.top(20)};
+
+  const proxy = addr?await accountCache.proxy(addr):undefined;
+  const balance =  addr?accountCache.balance(proxy||addr):undefined;
+
+  const [chi,dsr,rho] = accountCache.lastChi();
+  /*const rho = new Date()/1000;
+  const chi = accountCache.chi(rho);
+  const dsr = accountCache.dsr(rho);*/
+  const pageData = {addr:addr,proxy,balance,chi,rho,dsr,top:await accountCache.top(12)};
   const reactDom = ReactDOMServer.renderToString(
       sheets.collect(
         <HelmetProvider context={helmetContext}>
@@ -135,12 +141,13 @@ async function renderOtherPage(req,res) {
   </html>
     `);
 }
-app.get('/0x:addr([A-Z][a-z]*[A-Z][a-z]*[A-Z][a-z]*)', (req,res) => {
+app.get('/0x:addr([a-fA-F0-9]{40}$)', (req,res) => {
   renderOtherPage(req,res)
 })
+/*
 app.get('*', (req,res) => {
   renderOtherPage(req,res)
-});
+});*/
 app.get('/', (req,res) => {
   renderOtherPage(req,res)
 });

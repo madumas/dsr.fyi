@@ -36,10 +36,19 @@ class Main extends Component {
     super(props);
     this.state = {};
     let req = props.match.req;
-    this.baseURL= 'http://localhost:3001'; //req ? `${req.protocol}://${req.get('Host')}` : '';
+    this.baseURL= req ? `${req.protocol}://${req.get('Host')}` : '';
     if(props.pageData!==undefined) {
       const address = props.pageData.addr?String(props.pageData.addr).toLowerCase():undefined;
-      this.state={value: props.pageData.addr, address: address, top:props.pageData.top};
+      this.state={
+        value: props.pageData.addr,
+        address: address,
+        top:props.pageData.top,
+        balance:props.pageData.balance,
+        proxy:props.pageData.proxy,
+        chi:props.pageData.chi,
+        rho:props.pageData.rho,
+        dsr:props.pageData.dsr
+      };
     }
   }
 
@@ -79,9 +88,10 @@ class Main extends Component {
   };
 
   async pullMakerState() {
+    const chi = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').chi()).div(RAY);
     const rho = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').rho());
     const dsr = new BigNumber(await this.state.maker.service('mcd:savings').get('smartContract').getContract('MCD_POT').dsr()).div(RAY);
-    this.setState({rho,dsr});
+    this.setState({chi,rho,dsr});
   }
 
   async refreshNumbers() {
@@ -100,7 +110,7 @@ class Main extends Component {
         this.setState({
             address: this.state.value,
             proxy: proxyAddress,
-            balance: balance,
+            balanceInt: balance,
             loading: false
         });
       }
@@ -127,18 +137,28 @@ class Main extends Component {
   proxyAddress() {
     const { proxy, loading } = this.state;
 
-    if (proxy && loading===false) {
+    if (proxy) {
       return "Proxy Address: " + proxy;
     }
     return '';
   }
 
   dsr() {
-    const { balance, loading } = this.state;
+    const { balance, loading, balanceInt } = this.state;
 
-    if (balance && balance.toNumber && loading===false) {
-      const adjustedBalance = Number(Math.pow(this.state.dsr.toNumber(),(new Date()/1000)-this.state.rho)*balance.toNumber());
-      return adjustedBalance.toLocaleString("en-EN", {
+    if (balanceInt && balanceInt.toNumber) {
+      if (loading===false) {
+        const adjustedBalance = Number(Math.pow(this.state.dsr.toNumber(), (new Date() / 1000) - this.state.rho) * balanceInt.toNumber());
+        return adjustedBalance.toLocaleString("en-EN", {
+          maximumFractionDigits: 7,
+          minimumFractionDigits: 7
+        }) + " DAI";
+      }
+      return '';
+    }
+    if (balance && this.state.rho && this.state.chi && this.state.dsr) { //SSR balance
+      const adjustedChi = Number(this.state.chi * Math.pow(this.state.dsr,(new Date()/1000)-this.state.rho));
+      return (balance*adjustedChi).toLocaleString("en-EN", {
         maximumFractionDigits: 7,
         minimumFractionDigits: 7
       })+ " DAI";

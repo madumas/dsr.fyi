@@ -1,5 +1,6 @@
 import potAbi from '@makerdao/dai-plugin-mcd/contracts/abis/Pot.json';
 import proxyAbi from '@makerdao/dai-plugin-mcd/contracts/abis/DSProxy.json';
+import proxyRegAbi from '@makerdao/dai-plugin-mcd/contracts/abis/ProxyRegistry.json';
 
 const abiDecode = require("abi-decoder");
 import {sha3, numStringToBytes32, padsig, decodeDSNote, fromWei} from "../utils";
@@ -8,7 +9,8 @@ const dict = {
   pot: {
     join: sha3('join(uint256)'),
     exit: sha3('exit(uint256)'),
-    fileGlob: sha3('file(bytes32,uint256)') //0x29ae8114
+    fileGlob: sha3('file(bytes32,uint256)'), //0x29ae8114
+    drip: sha3('drip()')
   }
 };
 
@@ -34,17 +36,24 @@ export default class accounts {
         this._processJoin(result).then(function () {});
       }
     });
-
-
-
   }
 
   balance(address) {
-
+    return (this.addresses[String(address).toLowerCase()]||{}).balance;
   }
 
-  proxy(address) {
-
+  async proxy(address) {
+    let proxy = Object.values(this.addresses).find(el=>el.owner===address);
+    //console.log('proxy()',proxy,address,Object.values(this.addresses)[0])
+    if (proxy) return proxy.address;
+    proxy = -1;
+    const proxyRegContract = new _this.web3.eth.Contract(proxyRegAbi, this.mcdConfig.addresses.PROXY_REGISTRY);
+    try {
+      proxy = String(await proxyRegContract.methods.proxies(address).call()).toLowerCase();
+    } catch (e) {
+      //no proxy
+    }
+    return proxy==='0x0000000000000000000000000000000000000000'?undefined:proxy;
   }
 
   list() {
@@ -60,18 +69,31 @@ export default class accounts {
         owner=-1;
         const proxyContract = new _this.web3.eth.Contract(proxyAbi, list[i].address);
         try {
-          owner = await proxyContract.methods.owner().call();
+          owner = String(await proxyContract.methods.owner().call()).toLowerCase();
         } catch (e) {
           //no proxy
         }
         list[i].owner = owner;
       }
-      response.push({addr:list[i].address, proxyOwner:owner, balance:list[i].balance*(this._chi(new Date()/1000))});
+      response.push({addr:list[i].address, proxyOwner:owner, balance:list[i].balance*(this.chi(new Date()/1000))});
     }
     return response;
   }
 
-  _chi(timestamp){
+  lastChi(){
+    let rho=0;
+    let lastData;
+    for (let [timeS, data] of Object.entries(this.rates)) {
+      const time=Number(timeS);
+      if (time>rho) {
+        rho=time;
+        lastData=data;
+      }
+    }
+    return([lastData.chi,lastData.dsr,rho]);
+  }
+
+  chi(timestamp){
     let last=0;
     let lastData;
     for (let [timeS, data] of Object.entries(this.rates)) {
@@ -84,6 +106,19 @@ export default class accounts {
     return(lastData.chi*Math.pow(lastData.dsr, timestamp-last));
   }
 
+  dsr(timestamp){
+    let last=0;
+    let lastData;
+    for (let [timeS, data] of Object.entries(this.rates)) {
+      const time=Number(timeS);
+      if (time<timestamp && time>last) {
+        last=time;
+        lastData=data;
+      }
+    }
+    return(lastData.dsr);
+  }
+
   async _getBlock(blockNumber) {
     if (typeof this.blockCache[blockNumber]==="undefined") {
       this.blockCache[blockNumber] = await _this.web3.eth.getBlock(blockNumber);
@@ -94,7 +129,7 @@ export default class accounts {
   async _processJoin(result, exit=false) {
     if(result.topics[0]===padsig(dict.pot.exit)) exit=true;
     let decoded=decodeDSNote(result);
-    const address = '0x'+decoded.arg1.substring(26);
+    const address = String('0x'+decoded.arg1.substring(26)).toLowerCase();
     let data = _this.web3.eth.abi.decodeParameters(
       [{name: "value",type: "uint256"}],
       decoded.arg2);

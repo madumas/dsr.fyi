@@ -36,14 +36,14 @@ class TopAccounts extends Component {
     this.props.top.forEach(row => {
       promises.push( new Promise((resolve,reject)=>{
         this.props.maker.service('mcd:savings').balanceOf(row.addr).then(balance=>{
-          resolve({addr:row.addr,balance});
+          resolve({addr:row.addr,proxyOwner:row.proxyOwner, balance});
         });
       }))
     });
     Promise.all(promises).then(balanceData => {
       const balances=[];
       balanceData.forEach(bal => {
-        balances.push([bal.addr,bal.balance.toNumber()]);
+        balances.push([bal.addr,bal.proxyOwner,bal.balance.toNumber()]);
       });
       this.setState({balances});
     });
@@ -59,8 +59,10 @@ class TopAccounts extends Component {
       const displayAddr = row.proxyOwner===-1 ? row.addr : row.proxyOwner;
       let balance = row.balance;
       if(this.state.balances && this.props.dsr && this.props.rho && this.props.time) {
-        let storeBal = Number( this.state.balances.find(el=>el[0]===addr)[1]);
-        balance = storeBal * Number(Math.pow(this.props.dsr.toNumber(), (this.props.time / 1000) - this.props.rho));
+        let storeBal = this.state.balances.find(el=>(el[0]===addr||el[1]===addr));
+        if (storeBal) {
+          balance = Number(storeBal[2]) * Number(Math.pow(this.props.dsr.toNumber(), (this.props.time / 1000) - this.props.rho));
+        }
       }
       const displayBalance=balance.toLocaleString("en-EN", {
         maximumFractionDigits: 3,
