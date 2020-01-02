@@ -76,6 +76,7 @@ app.use(express.static("public_all"));
 
 app.get('/api/v1/addresses/top', (req, res) => {
   res.append('Access-Control-Allow-Origin', ['*']);
+  res.set('Cache-Control', 'public, max-age=30');
   accountCache.top(20).then((data) => {
     res.json(data)
   })
@@ -96,9 +97,6 @@ async function renderOtherPage(req,res) {
   const balance =  addr?accountCache.balance(proxy||addr):undefined;
 
   const [chi,dsr,rho] = accountCache.lastChi();
-  /*const rho = new Date()/1000;
-  const chi = accountCache.chi(rho);
-  const dsr = accountCache.dsr(rho);*/
   const pageData = {addr:addr,proxy,balance,chi,rho,dsr,top:await accountCache.top(12)};
   const reactDom = ReactDOMServer.renderToString(
       sheets.collect(
@@ -116,6 +114,7 @@ async function renderOtherPage(req,res) {
   const html = renderFullPage( reactDom );
   const { helmet } = helmetContext;
 
+  res.set('Cache-Control', 'public, max-age=30');
   res.send(`
   <!doctype html>
   <html ${helmet.htmlAttributes.toString()}>

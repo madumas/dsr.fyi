@@ -32,7 +32,7 @@ export default class accounts {
     }, (error,result)=>{
       if (error) throw error;
 
-      if(result.topics[0].substring(0,10)===dict.pot.join) {
+      if(result.topics[0].substring(0,10)===dict.pot.join || result.topics[0].substring(0,10)===dict.pot.exit) {
         this._processJoin(result).then(function () {});
       }
     });
@@ -133,7 +133,7 @@ export default class accounts {
     let data = _this.web3.eth.abi.decodeParameters(
       [{name: "value",type: "uint256"}],
       decoded.arg2);
-    const dai = fromWei(data.value)*(exit?-1:1);//*this._chi((await _this._getBlock(result.blockNumber)).timestamp);
+    const dai = fromWei(data.value)*(exit?-1:1);
     if(typeof _this.addresses[address]==='undefined') {
       _this.addresses[address] = {
         address:address,
