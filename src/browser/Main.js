@@ -116,7 +116,7 @@ class Main extends Component {
       }
     } catch (e) {
       console.log('Exception while pullChainData: '+e);
-      this.setState({proxy: undefined, balance: '? DAI', rho:0, dsr:1,loading:false});
+      this.setState({loading:false});
     }
   }
 
