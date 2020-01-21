@@ -21,7 +21,9 @@
     "dotenv": "^8.2.0",
     "abi-decoder": "^2.2.2",
     "web3": "^1.2.4",
-    "isomorphic-fetch": "^2.2.1"
+    "isomorphic-fetch": "^2.2.1",
+    "dateblock": "^0.1.6",
+    "node-cron": "^2.0.3"
   },
   "resolutions": {
     "jss": "10.0.0"

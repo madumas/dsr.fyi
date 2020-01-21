@@ -5,7 +5,9 @@ import App from '../browser/App.js'
 import '../index.css'
 import theme from '../theme';
 import accounts from './accounts'
+import potStats from './potStats'
 const Web3 = require("web3");
+import cron from 'node-cron';
 
 import saiProdAddresses from '@makerdao/dai/dist/contracts/addresses/mainnet'
 import prodAddresses from '@makerdao/dai-plugin-mcd/contracts/addresses/mainnet';
@@ -21,12 +23,12 @@ import { HelmetProvider } from 'react-helmet-async'
 require('dotenv').config();
 const app = express();
 
-let wsprovider = "wss://mainnet.infura.io/ws/v3/f9c5c0daaf2243b497c55c1ed8372d63";//;//'ws://ethereum:8546';
+let wsprovider = "wss://mainnet.infura.io/ws/v3/f9c5c0daaf2243b497c55c1ed8372d63";//;//'ws://192.168.0.23:8546';
 let mcdConfig={};
 mcdConfig.addresses = prodAddresses;
 mcdConfig.saiAddresses = saiProdAddresses;
 
-let ws,web3,accountCache
+let ws,web3,accountCache, potH;
 async function connect() {
   console.log("connect");
   ws = new Web3.providers.WebsocketProvider(wsprovider, {
@@ -52,11 +54,16 @@ async function connect() {
     web3 = new Web3(ws);
     accountCache = new accounts(web3, mcdConfig);
     accountCache.prefetch().then();
+    potH = new potStats(web3, mcdConfig);
+    potH.batchFetch(new Date(Date.UTC(2019,10,18,0,0,0,0)), new Date());
   });
 }
 
 connect().then(function(){});
 
+cron.schedule('0 */12 * * *', () => {
+  potH.update(new Date())
+},{timezone: "Etc/UTC"});
 
 app.set('port', (process.env.WEBPORT || 3001));
 
@@ -82,9 +89,15 @@ app.get('/api/v1/addresses/top', (req, res) => {
   })
 });
 
+app.get('/api/v1/dsr/pot/history', (req, res) => {
+  res.append('Access-Control-Allow-Origin', ['*']);
+  res.set('Cache-Control', 'public, max-age=30');
+  res.json(potH.history());
+});
+
 app.get('/sitemap.txt', (req, res) => {
   res.type('text/plain');
-  const list = accountCache.list()
+  const list = accountCache.list();
   res.send(list.reduce((txt,row)=>txt+'\nhttps://dsr.fyi/'+row.address,''));
 });
 
@@ -142,7 +155,7 @@ async function renderOtherPage(req,res) {
 }
 app.get('/0x:addr([a-fA-F0-9]{40}$)', (req,res) => {
   renderOtherPage(req,res)
-})
+});
 /*
 app.get('*', (req,res) => {
   renderOtherPage(req,res)
@@ -155,7 +168,7 @@ app.get('/', (req,res) => {
 
 app.listen(app.get('port'), () => {
   console.log(`Find the server at: http://localhost:${app.get('port')}/`) // eslint-disable-line no-console
-})
+});
 
 function renderFullPage(html) {
   return `
