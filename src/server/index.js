@@ -61,7 +61,7 @@ async function connect() {
 
 connect().then(function(){});
 
-cron.schedule('0 */12 * * *', () => {
+cron.schedule('5 */12 * * *', () => {
   potH.update(new Date())
 },{timezone: "Etc/UTC"});
 
