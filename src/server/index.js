@@ -23,7 +23,7 @@ import { HelmetProvider } from 'react-helmet-async'
 require('dotenv').config();
 const app = express();
 
-let wsprovider = "wss://mainnet.infura.io/ws/v3/f9c5c0daaf2243b497c55c1ed8372d63";//;//'ws://192.168.0.23:8546';
+let wsprovider = 'ws://vpn.0xna.me:8546/'; //'ws://192.168.0.23:8546';//"wss://mainnet.infura.io/ws/v3/f9c5c0daaf2243b497c55c1ed8372d63";
 let mcdConfig={};
 mcdConfig.addresses = prodAddresses;
 mcdConfig.saiAddresses = saiProdAddresses;
