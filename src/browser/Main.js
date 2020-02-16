@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles'
 import {Grid, Paper, Typography, TextField, Box, CircularProgress} from '@material-ui/core'
 import './App.css';
+import Graph from './Graph.js';
 import TopAccounts from "./topAccounts";
 import createMaker from '../eth/maker';
 import { RAY } from '@makerdao/dai/dist/src/utils/constants';
@@ -43,6 +44,7 @@ class Main extends Component {
         value: props.pageData.addr,
         address: address,
         top:props.pageData.top,
+        rates:props.pageData.rates,
         balance:props.pageData.balance,
         proxy:props.pageData.proxy,
         chi:props.pageData.chi,
@@ -53,8 +55,11 @@ class Main extends Component {
   }
 
   async fetchData() {
-    const data = (await fetch(this.baseURL + '/api/v1/addresses/top')).json();
-    return data;
+    return (await fetch(this.baseURL + '/api/v1/addresses/top')).json();
+  }
+
+  async fetchRateData() {
+    return (await fetch('/api/v1/dsr/pot/history')).json();
   }
 
   async componentDidMount() {
@@ -62,7 +67,8 @@ class Main extends Component {
       const maker = await createMaker();
       await maker.authenticate();
       const top = this.state.top || await this.fetchData();
-      this.setState({ maker: maker, loading:false, top})
+      const rates = this.state.rates || await this.fetchRateData();
+      this.setState({ maker: maker, loading:false, top, rates});
       await this.pullMakerState();
     } catch (e) {
       console.log('Exception while creating Maker: ' +e)
@@ -73,8 +79,16 @@ class Main extends Component {
 
     const { addr } = this.props.match.params;
     if(addr) {
-      this.setState({value: addr});
-      await this.pullChainData(false);
+      this.setState({value: addr, initial:true});
+    }
+  }
+
+  componentDidUpdate(prevProps,prevState) {
+    if (this.props.match.params.addr !== prevProps.match.params.addr ) {
+      this.setState({value: this.props.match.params.addr});
+    }
+    if (this.state.value !== prevState.value) {
+      this.pullChainData(this.state.initial).then(()=>{this.setState({initial:false})});
     }
   }
 
@@ -122,23 +136,29 @@ class Main extends Component {
 
   handleSubmit = async (event) => {
     event.preventDefault();
-    this.setState()
+    this.setState();
     await this.pullChainData();
   };
 
   address() {
     const { address, loading } = this.state;
     if (address && loading!==true) {
-      return "Owner Address: " + address;
+      const url='https://etherscan.io/address/'+address;
+      return <div>
+        Owner Address: <a href={url} >{address}</a>
+      </div>
     }
     return '';
   }
 
   proxyAddress() {
-    const { proxy, loading } = this.state;
+    const { proxy } = this.state;
 
     if (proxy) {
-      return "Proxy Address: " + proxy;
+      const url='https://etherscan.io/address/'+proxy;
+      return <div>
+        Proxy Address: <a href={url} >{proxy}</a>
+      </div>
     }
     return '';
   }
@@ -185,7 +205,7 @@ class Main extends Component {
           <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
         </Helmet>
         <Grid container justify="center" spacing={10}>
-          <Grid item >
+          <Grid item xs={10} md={8}>
             <Paper className={classes.paper}>
               <Typography>
                 View the live Dai Savings Rates (DSR) balance of an Ethereum Address.
@@ -222,7 +242,12 @@ class Main extends Component {
               </h1>
             </Paper>
           </Grid>
-          <Grid item >
+          <Grid item xs={10} md={5} >
+            <Paper className={classes.paper}>
+              <Graph rates={this.state.rates}/>
+            </Paper>
+          </Grid>
+          <Grid item xs={10} md={5}>
             <Paper className={classes.paper}>
               <TopAccounts top={this.state.top} rho={this.state.rho} dsr={this.state.dsr} maker={this.state.maker} time={this.state.time} />
             </Paper>

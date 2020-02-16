@@ -8,8 +8,9 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import {Box} from "@material-ui/core";
+import {Link} from "react-router-dom";
 
-const styles = theme => ({
+const styles = () => ({
   table: {
     //minWidth: 650,
   },
@@ -34,7 +35,7 @@ class TopAccounts extends Component {
     const promises=[];
     if (!this.props.maker || !this.props.top) return;
     this.props.top.forEach(row => {
-      promises.push( new Promise((resolve,reject)=>{
+      promises.push( new Promise((resolve)=>{
         this.props.maker.service('mcd:savings').balanceOf(row.addr).then(balance=>{
           resolve({addr:row.addr,proxyOwner:row.proxyOwner, balance});
         });
@@ -47,10 +48,9 @@ class TopAccounts extends Component {
       });
       this.setState({balances});
     });
-    return;
   }
 
-  top10() {
+  top20() {
     if (!this.props.top) return [];
 
     let accounts=[];
@@ -71,12 +71,12 @@ class TopAccounts extends Component {
       accounts.push({addr,displayAddr,balance,displayBalance});
     });
     accounts.sort((a,b)=>b.balance-a.balance);
-    return accounts.slice(0,10);
+    return accounts.slice(0,20);
   }
 
   render() {
     const { classes } = this.props;
-    const rows = this.top10();
+    const rows = this.top20();
     return (
       <div>
         <Box>
@@ -94,7 +94,7 @@ class TopAccounts extends Component {
               {rows.map(row => (
                 <TableRow key={row.addr}>
                   <TableCell component="th" scope="row">
-                    <a href={'/'+row.displayAddr}>{row.displayAddr}</a>
+                    <Link to={'/'+row.displayAddr}>{row.displayAddr}</Link>
                   </TableCell>
                   <TableCell align="right">{row.displayBalance}</TableCell>
                 </TableRow>

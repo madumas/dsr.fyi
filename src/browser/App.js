@@ -8,6 +8,10 @@ class App extends Component {
         this.data = props.data
     }
 
+    componentDidUpdate(prevProps) {
+        this.data=undefined
+    }
+
     render() {
         return(
             <div>
@@ -19,6 +23,5 @@ class App extends Component {
         );
     }
 }
-
 
 export default withRouter(App);

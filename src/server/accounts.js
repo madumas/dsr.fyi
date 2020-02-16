@@ -3,7 +3,7 @@ import proxyAbi from '@makerdao/dai-plugin-mcd/contracts/abis/DSProxy.json';
 import proxyRegAbi from '@makerdao/dai-plugin-mcd/contracts/abis/ProxyRegistry.json';
 
 const abiDecode = require("abi-decoder");
-import {sha3, numStringToBytes32, padsig, decodeDSNote, fromWei} from "../utils";
+import {sha3, padsig, decodeDSNote, fromWei} from "../utils";
 
 const dict = {
   pot: {
@@ -63,7 +63,7 @@ export default class accounts {
   async top(count=100) {
     let list=Object.values(_this.addresses).sort((a,b)=>b.balance-a.balance);
     let response=[];
-    for(let i=0;i<count;i++) {
+    for(let i=0;i<Math.min(count,list.length);i++) {
       let owner=list[i].owner;
       if (typeof list[i].owner === 'undefined') {
         owner=-1;
@@ -103,7 +103,7 @@ export default class accounts {
         lastData=data;
       }
     }
-    return(lastData.chi*Math.pow(lastData.dsr, timestamp-last));
+    return(lastData?(lastData.chi*Math.pow(lastData.dsr, timestamp-last)):1);
   }
 
   dsr(timestamp){
@@ -168,8 +168,7 @@ export default class accounts {
               {name: "value", type: "uint256"}],
             decoded.data.substr(10));
           const what = this.web3.utils.toAscii(data.what).replace(/\0/g, '');
-          const value = data.value;
-          fileData[what] = value;
+          fileData[what] = data.value;
         }
       });
 
@@ -180,14 +179,14 @@ export default class accounts {
         const chi = fromWei(await potContract.methods.chi().call(txReceipt.blockNumber)) / 1000000000;
         const blockTime = (await _this.web3.eth.getBlock(txReceipt.blockNumber)).timestamp;
         console.log(txReceipt.blockNumber);
-        this.rates[blockTime] = {dsr, rate, chi};
+        this.rates[blockTime] = {blockTime, dsr, rate, chi};
       }
     }
   }
 
 
   batchFetchFile( blockStart, blockEnd ) {
-    return new Promise(function(resolve,reject) {
+    return new Promise(function(resolve) {
       _this.web3.eth.getPastLogs({
         address: _this.mcdConfig.addresses.MCD_POT,
         fromBlock: blockStart,
@@ -202,7 +201,7 @@ export default class accounts {
   }
 
   batchFetchJoin( blockStart, blockEnd ) {
-    return new Promise(function(resolve,reject) {
+    return new Promise(function(resolve) {
       _this.web3.eth.getPastLogs({
           address: _this.mcdConfig.addresses.MCD_POT,
           fromBlock: blockStart,

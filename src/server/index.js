@@ -23,7 +23,7 @@ import { HelmetProvider } from 'react-helmet-async'
 require('dotenv').config();
 const app = express();
 
-let wsprovider = 'ws://vpn.0xna.me:8546/'; //'ws://192.168.0.23:8546';//"wss://mainnet.infura.io/ws/v3/f9c5c0daaf2243b497c55c1ed8372d63";
+let wsprovider = 'ws://192.168.0.23:8546';//'ws://vpn.0xna.me:8546/'; //'ws://192.168.0.23:8546';//"wss://mainnet.infura.io/ws/v3/f9c5c0daaf2243b497c55c1ed8372d63";
 let mcdConfig={};
 mcdConfig.addresses = prodAddresses;
 mcdConfig.saiAddresses = saiProdAddresses;
@@ -95,6 +95,12 @@ app.get('/api/v1/dsr/pot/history', (req, res) => {
   res.json(potH.history());
 });
 
+app.get('/api/v1/dsr/rates', (req, res) => {
+  res.append('Access-Control-Allow-Origin', ['*']);
+  res.set('Cache-Control', 'public, max-age=30');
+  res.json(accountCache.rates);
+});
+
 app.get('/sitemap.txt', (req, res) => {
   res.type('text/plain');
   const list = accountCache.list();
@@ -109,8 +115,9 @@ async function renderOtherPage(req,res) {
   const proxy = addr?await accountCache.proxy(addr):undefined;
   const balance =  addr?accountCache.balance(proxy||addr):undefined;
 
+  const rates = potH.history();
   const [chi,dsr,rho] = accountCache.lastChi();
-  const pageData = {addr:addr,proxy,balance,chi,rho,dsr,top:await accountCache.top(12)};
+  const pageData = {addr:addr,proxy,balance,chi,rho,dsr,rates,top:await accountCache.top(25)};
   const reactDom = ReactDOMServer.renderToString(
       sheets.collect(
         <HelmetProvider context={helmetContext}>
@@ -156,10 +163,6 @@ async function renderOtherPage(req,res) {
 app.get('/0x:addr([a-fA-F0-9]{40}$)', (req,res) => {
   renderOtherPage(req,res)
 });
-/*
-app.get('*', (req,res) => {
-  renderOtherPage(req,res)
-});*/
 app.get('/', (req,res) => {
   renderOtherPage(req,res)
 });

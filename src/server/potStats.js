@@ -1,6 +1,6 @@
 import DateBlock from 'dateblock'
 import potAbi from '@makerdao/dai-plugin-mcd/contracts/abis/Pot.json';
-import {sha3, fromWei} from "../utils";
+import {fromWei} from "../utils";
 
 let _this;
 
@@ -31,10 +31,18 @@ export default class potStats {
         });
         promises[1] = new Promise(function (resolve) {
           _this.potContractInst.methods.chi().call({}, block.number).then(chi => {
-              resolve(fromWei(chi)/1000000000);
+            resolve(fromWei(chi)/1000000000);
           }).catch(function (err) {
-              console.log(err);
-              resolve(0);
+            console.log(err);
+            resolve(0);
+          })
+        });
+        promises[2] = new Promise(function (resolve) {
+          _this.potContractInst.methods.dsr().call({}, block.number).then(chi => {
+            resolve(100*(Math.pow(fromWei(chi)/1000000000,60*60*24*365)-1));
+          }).catch(function (err) {
+            console.log(err);
+            resolve(0);
           })
         });
 
@@ -43,6 +51,7 @@ export default class potStats {
             date: new Date(date),
             Pie: results[0],
             chi: results[1],
+            dsr: results[2],
             TotDSR: results[0]*results[1]
           });
           resolve(1);

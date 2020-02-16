@@ -23,7 +23,9 @@
     "web3": "^1.2.4",
     "isomorphic-fetch": "^2.2.1",
     "dateblock": "^0.1.6",
-    "node-cron": "^2.0.3"
+    "node-cron": "^2.0.3",
+    "recharts": "^2.0.0-beta.1",
+    "moment": "^2.24.0"
   },
   "resolutions": {
     "jss": "10.0.0"
@@ -35,6 +37,7 @@
     "eject": "react-scripts eject",
     "buildserver": "webpack --production",
     "server":  "nodemon --delay 7 server.js",
+    "server-nobuild":  "node server.js",
     "serverdev": "webpack --development -w & nodemon --delay 5 server.js"
   },
   "eslintConfig": {
@@ -56,5 +59,7 @@
     "@babel/cli": "^7.7.7",
     "babel-loader": "^8.0.6",
     "@babel/plugin-proposal-class-properties": "^7.7.4"
-  }
+  },
+  "proxy": "http://localhost:3001"
+
 }
