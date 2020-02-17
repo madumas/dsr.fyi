@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles'
-import {Grid, Paper, Typography, TextField, Box, CircularProgress} from '@material-ui/core'
+import {Grid, Paper, Typography, TextField, Box, CircularProgress, Tooltip} from '@material-ui/core'
 import './App.css';
 import Graph from './Graph.js';
 import TopAccounts from "./topAccounts";
@@ -32,6 +32,16 @@ const styles = theme => ({
   }
 });
 
+const HtmlTooltip = withStyles(theme => ({
+  tooltip: {
+    backgroundColor: '#f5f5f9',
+    color: 'rgba(0, 0, 0, 0.87)',
+    maxWidth: 220,
+    fontSize: theme.typography.pxToRem(12),
+    border: '1px solid #dadde9',
+  },
+}))(Tooltip);
+
 class Main extends Component {
   constructor(props) {
     super(props);
@@ -49,7 +59,8 @@ class Main extends Component {
         proxy:props.pageData.proxy,
         chi:props.pageData.chi,
         rho:props.pageData.rho,
-        dsr:props.pageData.dsr
+        dsr:props.pageData.dsr,
+        count:props.pageData.count
       };
     }
   }
@@ -62,13 +73,18 @@ class Main extends Component {
     return (await fetch('/api/v1/dsr/pot/history')).json();
   }
 
+  async fetchStats() {
+    return (await fetch('/api/v1/addresses/stats')).json();
+  }
+
   async componentDidMount() {
     try {
       const maker = await createMaker();
       await maker.authenticate();
       const top = this.state.top || await this.fetchData();
       const rates = this.state.rates || await this.fetchRateData();
-      this.setState({ maker: maker, loading:false, top, rates});
+      const stats = this.state.stats || await this.fetchStats();
+      this.setState({ maker: maker, loading:false, top, rates, stats});
       await this.pullMakerState();
     } catch (e) {
       console.log('Exception while creating Maker: ' +e)
@@ -109,7 +125,7 @@ class Main extends Component {
   }
 
   async refreshNumbers() {
-    this.setState({top:await this.fetchData()});
+    this.setState({top:await this.fetchData(), stats:await this.fetchStats()});
     await this.pullChainData(false)
   }
 
@@ -197,6 +213,8 @@ class Main extends Component {
     const { classes } = this.props;
     const canonicalURL = "https://0xna.me/"+this.state.address;
     const canonicalLink = this.state.address?<link rel="canonical" href= {canonicalURL}/>:'';
+    const dsrRate = Number((Math.pow(this.state.dsr,60*60*24*365)-1)*100).toFixed(2);
+    const count = this.state.stats? this.state.stats.count:0;
         return (
       <div className="Main">
         <Helmet>
@@ -205,7 +223,7 @@ class Main extends Component {
           <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
         </Helmet>
         <Grid container justify="center" spacing={10}>
-          <Grid item xs={10} md={8}>
+          <Grid item xs={11} md={8}>
             <Paper className={classes.paper}>
               <Typography>
                 View the live Dai Savings Rates (DSR) balance of an Ethereum Address.
@@ -242,12 +260,34 @@ class Main extends Component {
               </h1>
             </Paper>
           </Grid>
-          <Grid item xs={10} md={5} >
+          <Grid item xs={11} md={5} >
+            <Paper className={classes.paper}>
+              <Grid container justify={"center"} spacing={10}>
+                <Grid item>
+                DSR: <Typography variant="h2">{dsrRate}%</Typography>
+                </Grid>
+                <Grid item>
+                  Accounts:
+                <HtmlTooltip
+                  title={
+                    <React.Fragment>
+                      <Typography color="inherit">Address count</Typography>
+                     {"Where balance is greater or equal to 1 DAI. "}
+                     {"Does not include Chai and similar token addresses"}
+                    </React.Fragment>
+                  }
+                >
+                  <Typography variant="h2">{count}</Typography>
+                </HtmlTooltip>
+                </Grid>
+              </Grid>
+            </Paper>
+            <p/>
             <Paper className={classes.paper}>
               <Graph rates={this.state.rates}/>
             </Paper>
           </Grid>
-          <Grid item xs={10} md={5}>
+          <Grid item xs={11} md={5}>
             <Paper className={classes.paper}>
               <TopAccounts top={this.state.top} rho={this.state.rho} dsr={this.state.dsr} maker={this.state.maker} time={this.state.time} />
             </Paper>

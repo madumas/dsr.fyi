@@ -89,6 +89,12 @@ app.get('/api/v1/addresses/top', (req, res) => {
   })
 });
 
+app.get('/api/v1/addresses/stats', (req, res) => {
+  res.append('Access-Control-Allow-Origin', ['*']);
+  res.set('Cache-Control', 'public, max-age=30');
+  res.json({count:accountCache.count()});
+});
+
 app.get('/api/v1/dsr/pot/history', (req, res) => {
   res.append('Access-Control-Allow-Origin', ['*']);
   res.set('Cache-Control', 'public, max-age=30');
@@ -117,7 +123,8 @@ async function renderOtherPage(req,res) {
 
   const rates = potH.history();
   const [chi,dsr,rho] = accountCache.lastChi();
-  const pageData = {addr:addr,proxy,balance,chi,rho,dsr,rates,top:await accountCache.top(25)};
+  const count = accountCache.count();
+  const pageData = {addr:addr,proxy,balance,chi,rho,dsr,count,rates,top:await accountCache.top(25)};
   const reactDom = ReactDOMServer.renderToString(
       sheets.collect(
         <HelmetProvider context={helmetContext}>

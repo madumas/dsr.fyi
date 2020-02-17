@@ -56,6 +56,14 @@ export default class accounts {
     return proxy==='0x0000000000000000000000000000000000000000'?undefined:proxy;
   }
 
+  count(threshold=1) {
+    let count=0;
+    Object.values(_this.addresses).forEach(act => {
+      if (act.balance>=threshold) count++;
+    });
+    return count;
+  }
+
   list() {
     return Object.values(_this.addresses);
   }
