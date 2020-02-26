@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Box, withStyles} from "@material-ui/core";
+import {Box, withStyles, Typography} from "@material-ui/core";
 import {LineChart, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Line} from "recharts";
 import 'isomorphic-fetch'
 import moment from "moment";
@@ -31,9 +31,12 @@ class Graph extends Component {
     return (
       <div>
         <Box>
-          Savings Rate and total Dai in DSR history <p/>
+          <Typography>
+          Savings Rate and total Dai in DSR<p/>
+          </Typography>
         </Box>
         <div>
+          <Typography>
           <ResponsiveContainer height='90%' width='100%' aspect={4.0/3.0} >
             <LineChart
               data={data}
@@ -52,6 +55,7 @@ class Graph extends Component {
               <Line type="monotone" dataKey="Rate" stroke="#737300" yAxisId={1}/>
             </LineChart>
           </ResponsiveContainer>
+          </Typography>
         </div>
       </div>
     )

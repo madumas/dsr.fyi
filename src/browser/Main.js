@@ -13,18 +13,16 @@ import 'isomorphic-fetch'
 const styles = theme => ({
   root: {
     flexGrow: 1,
+    backgroundColor: '#f5f5f9'
   },
   paper: {
     padding: theme.spacing.unit * 2,
     textAlign: 'left',
-    color: theme.palette.text.secondary,
+    color: theme.palette.text.primary,
   },
   balance: {
     verticalAlign: 'middle',
     textAlign: 'center'
-  },
-  proxy: {
-    fontSize: 'x-small'
   },
   progress: {
     verticalAlign: 'middle',
@@ -160,9 +158,9 @@ class Main extends Component {
     const { address, loading } = this.state;
     if (address && loading!==true) {
       const url='https://etherscan.io/address/'+address;
-      return <div>
+      return <Typography variant="caption" >
         Owner Address: <a href={url} >{address}</a>
-      </div>
+      </Typography>
     }
     return '';
   }
@@ -172,9 +170,9 @@ class Main extends Component {
 
     if (proxy) {
       const url='https://etherscan.io/address/'+proxy;
-      return <div>
+      return <Typography variant="caption" >
         Proxy Address: <a href={url} >{proxy}</a>
-      </div>
+      </Typography>
     }
     return '';
   }
@@ -216,7 +214,7 @@ class Main extends Component {
     const dsrRate = Number((Math.pow(this.state.dsr,60*60*24*365)-1)*100).toFixed(2);
     const count = this.state.stats? this.state.stats.count:0;
         return (
-      <div className="Main">
+      <div className={classes.root}>
         <Helmet>
           <title>dsr.fyi: View your live DSR Balance</title>
           {canonicalLink}
@@ -242,10 +240,10 @@ class Main extends Component {
                 />
               </form>
               <br/>
-              <div className={classes.proxy}>
+              <div>
                 {this.address()}
               </div>
-              <div className={classes.proxy}>
+              <div>
                 {this.proxyAddress()}
               </div>
               <div className={classes.progress}>
@@ -264,16 +262,17 @@ class Main extends Component {
             <Paper className={classes.paper}>
               <Grid container justify={"center"} spacing={10}>
                 <Grid item>
-                DSR: <Typography variant="h2">{dsrRate}%</Typography>
+                  <Typography>DSR</Typography>
+                  <Typography variant="h2">{dsrRate}%</Typography>
                 </Grid>
                 <Grid item>
-                  Accounts:
+                  <Typography>Accounts</Typography>
                 <HtmlTooltip
                   title={
                     <React.Fragment>
                       <Typography color="inherit">Address count</Typography>
                      {"Where balance is greater or equal to 1 DAI. "}
-                     {"Does not include Chai and similar token addresses"}
+                     {"Multiple users can be behind one address (e.g. Compound, Chai, etc.)"}
                     </React.Fragment>
                   }
                 >
@@ -287,7 +286,7 @@ class Main extends Component {
               <Graph rates={this.state.rates}/>
             </Paper>
           </Grid>
-          <Grid item xs={11} md={5}>
+          <Grid item xs={11} md={5} lg={4} xl={3}>
             <Paper className={classes.paper}>
               <TopAccounts top={this.state.top} rho={this.state.rho} dsr={this.state.dsr} maker={this.state.maker} time={this.state.time} />
             </Paper>

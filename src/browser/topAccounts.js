@@ -1,13 +1,7 @@
 import React, { Component } from 'react';
 import {withStyles} from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
-import {Box} from "@material-ui/core";
+import {Box, Typography, Paper, TableRow, TableHead} from "@material-ui/core";
+import {TableContainer, TableCell, TableBody, Table} from "@material-ui/core";
 import {Link} from "react-router-dom";
 
 const styles = () => ({
@@ -56,7 +50,8 @@ class TopAccounts extends Component {
     let accounts=[];
     this.props.top.forEach(row => {
       const addr=row.addr;
-      const displayAddr = row.proxyOwner===-1 ? row.addr : row.proxyOwner;
+      const linkAddr = row.proxyOwner===-1 ? row.addr : row.proxyOwner;
+      const displayAddr = String(linkAddr).substring(0,15)+"...";
       let balance = row.balance;
       if(this.state.balances && this.props.dsr && this.props.rho && this.props.time) {
         let storeBal = this.state.balances.find(el=>(el[0]===addr||el[1]===addr));
@@ -68,7 +63,7 @@ class TopAccounts extends Component {
         maximumFractionDigits: 3,
         minimumFractionDigits: 3
       })+ " DAI";
-      accounts.push({addr,displayAddr,balance,displayBalance});
+      accounts.push({addr,displayAddr,balance,displayBalance,linkAddr});
     });
     accounts.sort((a,b)=>b.balance-a.balance);
     return accounts.slice(0,20);
@@ -79,9 +74,11 @@ class TopAccounts extends Component {
     const rows = this.top20();
     return (
       <div>
-        <Box>
-          Top DSR accounts
-        </Box>
+        <Typography>
+          <Box>
+            Top DSR accounts
+          </Box>
+        </Typography>
         <TableContainer component={Paper}>
           <Table className={classes.table} size="small" aria-label="a dense table">
             <TableHead>
@@ -94,7 +91,11 @@ class TopAccounts extends Component {
               {rows.map(row => (
                 <TableRow key={row.addr}>
                   <TableCell component="th" scope="row">
-                    <Link to={'/'+row.displayAddr}>{row.displayAddr}</Link>
+                    <Typography>
+                      <Box fontFamily={"monospace"} fontSize={"smaller"}>
+                        <Link to={'/'+row.linkAddr}>{row.displayAddr}</Link>
+                      </Box>
+                    </Typography>
                   </TableCell>
                   <TableCell align="right">{row.displayBalance}</TableCell>
                 </TableRow>
