@@ -6,7 +6,6 @@ import moment from "moment";
 
 const styles = () => ({
   table: {
-    //minWidth: 650,
   },
 });
 

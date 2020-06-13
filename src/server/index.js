@@ -22,7 +22,7 @@ import { HelmetProvider } from 'react-helmet-async'
 require('dotenv').config();
 const app = express();
 
-let wsprovider = process.env.WSURL;
+let wsprovider = process.env.ARCHIVENODEWSURL;
 let mcdConfig={};
 mcdConfig.addresses = prodAddresses;
 

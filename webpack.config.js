@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const Dotenv = require('dotenv-webpack');
 const nodeExternals = require('webpack-node-externals');
 
 let mode = 'production';
@@ -28,6 +29,7 @@ const browserConfig = {
     new webpack.DefinePlugin({
       __isBrowser__: "true"
     }),
+    new Dotenv()
   ]
 };
 
@@ -56,7 +58,8 @@ const serverConfig = {
   plugins: [
     new webpack.DefinePlugin({
       __isBrowser__: "false"
-    })
+    }),
+    new Dotenv()
   ]
 };
 
