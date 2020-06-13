@@ -7,8 +7,10 @@ import TopAccounts from "./topAccounts";
 import createMaker from '../eth/maker';
 import { RAY } from '@makerdao/dai/dist/src/utils/constants';
 import BigNumber from 'bignumber.js';
-import { Helmet } from 'react-helmet-async'
-import 'isomorphic-fetch'
+import { Helmet } from 'react-helmet-async';
+import 'isomorphic-fetch';
+import GithubIcon from 'mdi-react/GithubIcon'
+import IconButton from '@material-ui/core/IconButton';
 
 const styles = theme => ({
   root: {
@@ -287,9 +289,16 @@ class Main extends Component {
             </Paper>
           </Grid>
           <Grid item xs={11} md={5} lg={4} xl={3}>
-            <Paper className={classes.paper}>
-              <TopAccounts top={this.state.top} rho={this.state.rho} dsr={this.state.dsr} maker={this.state.maker} time={this.state.time} />
-            </Paper>
+          <Paper className={classes.paper}>
+            <TopAccounts top={this.state.top} rho={this.state.rho} dsr={this.state.dsr} maker={this.state.maker} time={this.state.time} />
+          </Paper>
+        </Grid>
+          <Grid item xs={12}>
+            <a href='https://github.com/madumas/dsr.fyi'>
+              <IconButton color="primary" aria-label="GitHub Repo">
+                <GithubIcon />
+              </IconButton>
+            </a>
           </Grid>
         </Grid>
       </div>
