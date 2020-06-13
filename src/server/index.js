@@ -9,7 +9,6 @@ import potStats from './potStats'
 const Web3 = require("web3");
 import cron from 'node-cron';
 
-import saiProdAddresses from '@makerdao/dai/dist/contracts/addresses/mainnet'
 import prodAddresses from '@makerdao/dai-plugin-mcd/contracts/addresses/mainnet';
 
 import {
@@ -23,10 +22,9 @@ import { HelmetProvider } from 'react-helmet-async'
 require('dotenv').config();
 const app = express();
 
-let wsprovider = 'ws://vpn.0xna.me:8546/'; //'ws://192.168.0.23:8546';//"wss://mainnet.infura.io/ws/v3/f9c5c0daaf2243b497c55c1ed8372d63";
+let wsprovider = process.env.WSURL;
 let mcdConfig={};
 mcdConfig.addresses = prodAddresses;
-mcdConfig.saiAddresses = saiProdAddresses;
 
 let ws,web3,accountCache, potH;
 async function connect() {
@@ -67,10 +65,6 @@ cron.schedule('5 */12 * * *', () => {
 
 app.set('port', (process.env.WEBPORT || 3001));
 
-// Express only serves static assets in production
-//if (process.env.NODE_ENV === 'production') {
-//  app.use(express.static('browser/build'))
-//}
 app.use(morgan('combined'));
 
 app.get('/robots.txt', function (req, res) {

@@ -6,8 +6,6 @@ import { hydrate } from 'react-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter } from 'react-router-dom'
 
-//ReactDOM.render(<App />, document.getElementById('root'));
-
 // Grab the state from a global variable injected into the server-generated HTML
 const preloadedState = window.__PRELOADED_STATE__;
 

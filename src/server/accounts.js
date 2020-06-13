@@ -44,7 +44,6 @@ export default class accounts {
 
   async proxy(address) {
     let proxy = Object.values(this.addresses).find(el=>el.owner===address);
-    //console.log('proxy()',proxy,address,Object.values(this.addresses)[0])
     if (proxy) return proxy.address;
     proxy = -1;
     const proxyRegContract = new _this.web3.eth.Contract(proxyRegAbi, this.mcdConfig.addresses.PROXY_REGISTRY);
@@ -186,7 +185,6 @@ export default class accounts {
         const potContract = new _this.web3.eth.Contract(potAbi, _this.mcdConfig.addresses.MCD_POT);
         const chi = fromWei(await potContract.methods.chi().call(txReceipt.blockNumber)) / 1000000000;
         const blockTime = (await _this.web3.eth.getBlock(txReceipt.blockNumber)).timestamp;
-        console.log(txReceipt.blockNumber);
         this.rates[blockTime] = {blockTime, dsr, rate, chi};
       }
     }
