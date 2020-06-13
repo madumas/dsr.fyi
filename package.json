@@ -36,8 +36,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "buildserver": "webpack --production",
-    "server":  "nodemon --delay 7 server.js",
-    "server-nobuild":  "node server.js",
+    "server":  "node server.js",
     "serverdev": "webpack --development -w & nodemon --delay 5 server.js"
   },
   "eslintConfig": {
